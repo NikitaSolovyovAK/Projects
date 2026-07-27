@@ -1,0 +1,65 @@
+{
+  "users": {
+    "7070ec28": {
+      "username": "admin",
+      "user_id": "7070ec28",
+      "created_at": "2026-02-28T16:08:45.541463",
+      "groups": [
+        "users"
+      ],
+      "permissions": {
+        "read_own_files": true,
+        "write_own_files": true,
+        "delete_own_files": true,
+        "create_files": true,
+        "create_folders": true
+      }
+    }
+  },
+  "disks": [
+    {
+      "disk_id": "ea2665e2",
+      "name": "C:",
+      "label": "",
+      "total_space": 1073741824,
+      "free_space": 1073741819,
+      "filesystem": "NTFS",
+      "owner_id": null,
+      "created_at": "2026-02-28T16:08:45.541474",
+      "mounted": true,
+      "root": {
+        "name": "/",
+        "owner": "7070ec28",
+        "group": "users",
+        "permissions": {
+          "owner": 7,
+          "group": 5,
+          "other": 5
+        },
+        "created_at": "2026-02-28T16:08:45.541496",
+        "modified_at": "2026-02-28T16:08:45.541967",
+        "type": "folder",
+        "children": [
+          {
+            "name": "file.txt",
+            "owner": "7070ec28",
+            "group": "users",
+            "permissions": {
+              "owner": 7,
+              "group": 5,
+              "other": 5
+            },
+            "created_at": "2026-02-28T16:08:45.541961",
+            "modified_at": "2026-02-28T16:08:45.542073",
+            "type": "file",
+            "format": "TXT",
+            "content": "68656c6c6f"
+          }
+        ]
+      }
+    }
+  ],
+  "current_user_id": "7070ec28",
+  "current_disk_id": "ea2665e2",
+  "current_path": "/"
+}
