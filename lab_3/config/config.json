@@ -1,0 +1,29 @@
+{
+    "window_width": 1000,
+    "window_height": 600,
+    "fps": 60,
+
+    "paddle_width": 20,
+    "paddle_height": 110,
+    "player_speed": 7.0,
+    "bot_speed": 6.0,
+    "paddle_margin": 40,
+
+    "ball_size": 18,
+    "ball_speed_x": 5,
+    "ball_speed_y": 5,
+    "max_ball_speed_x": 11.0,
+
+    "winning_score": 5,
+    "bot_tolerance": 100,
+
+    "sounds": {
+        "hit": "assets/sounds/hit.wav",
+        "goal": "assets/sounds/goal.wav"
+    },
+
+    "music": {
+    "background": "assets/music/background_soft_loop.wav",
+    "volume": 0.25
+    }
+}

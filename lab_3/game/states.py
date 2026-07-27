@@ -1,0 +1,8 @@
+MENU = "menu"
+PLAYING = "playing"
+HELP = "help"
+LEADERBOARD = "leaderboard"
+GAME_OVER = "game_over"
+NAME_INPUT = "name_input"
+ONLINE_CONNECT = "online_connect"
+ONLINE_PLAYING = "online_playing"
