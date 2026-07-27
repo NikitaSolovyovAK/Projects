@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual FileSystem</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header__left">
+                <span class="header__logo">⚙</span>
+                <h1 class="header__title">Virtual FileSystem</h1>
+            </div>
+            <div class="header__right">
+                <span class="header__user" id="currentUser">admin</span>
+                <span class="header__disk" id="diskInfo">C:</span>
+            </div>
+        </header>
+
+        <div class="main">
+            <!-- Sidebar: дерево -->
+            <aside class="sidebar">
+                <div class="sidebar__header">Дерево файлов</div>
+                <div class="sidebar__tree" id="treeView"></div>
+            </aside>
+
+            <!-- Content -->
+            <section class="content">
+                <!-- Breadcrumb / путь -->
+                <div class="toolbar">
+                    <div class="toolbar__path">
+                        <button class="btn btn--icon" onclick="cdTo('..')" title="Наверх">⬆</button>
+                        <span class="toolbar__cwd" id="currentPath">/</span>
+                    </div>
+                    <div class="toolbar__actions">
+                        <button class="btn btn--primary" onclick="showModal('touchModal')">📄 Файл</button>
+                        <button class="btn btn--primary" onclick="showModal('mkdirModal')">📁 Папка</button>
+                        <button class="btn btn--secondary" onclick="showModal('archiveModal')">📦 Архив</button>
+                        <button class="btn btn--secondary" onclick="doBackup()">💾 Бэкап</button>
+                        <button class="btn btn--secondary" onclick="showModal('restoreModal')">🔄 Восстановить</button>
+                        <button class="btn btn--secondary" onclick="doOrganize()">🗂 Организовать</button>
+                    </div>
+                </div>
+
+                <!-- Таблица файлов -->
+                <div class="file-table-wrap">
+                    <table class="file-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Имя</th>
+                                <th>Размер</th>
+                                <th>Формат</th>
+                                <th>Права</th>
+                                <th>Владелец</th>
+                                <th>Изменён</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fileTableBody"></tbody>
+                    </table>
+                    <div class="empty-state" id="emptyState" style="display:none">
+                        Папка пуста
+                    </div>
+                </div>
+
+                <!-- Disk usage bar -->
+                <div class="disk-bar">
+                    <div class="disk-bar__label">
+                        <span id="diskUsed">0</span> / <span id="diskTotal">0</span> занято
+                    </div>
+                    <div class="disk-bar__track">
+                        <div class="disk-bar__fill" id="diskFill" style="width:0%"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Лог операций -->
+        <footer class="log-panel">
+            <div class="log-panel__header">Журнал операций</div>
+            <div class="log-panel__body" id="logBody"></div>
+        </footer>
+    </div>
+
+    <!-- ═══ MODALS ═══ -->
+
+    <!-- Touch -->
+    <div class="modal-overlay" id="touchModal">
+        <div class="modal">
+            <div class="modal__header">Создать файл</div>
+            <input type="text" class="modal__input" id="touchName" placeholder="example.txt">
+            <div class="modal__actions">
+                <button class="btn btn--primary" onclick="doTouch()">Создать</button>
+                <button class="btn" onclick="hideModal('touchModal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mkdir -->
+    <div class="modal-overlay" id="mkdirModal">
+        <div class="modal">
+            <div class="modal__header">Создать папку</div>
+            <input type="text" class="modal__input" id="mkdirName" placeholder="new_folder">
+            <div class="modal__actions">
+                <button class="btn btn--primary" onclick="doMkdir()">Создать</button>
+                <button class="btn" onclick="hideModal('mkdirModal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Write -->
+    <div class="modal-overlay" id="writeModal">
+        <div class="modal">
+            <div class="modal__header">Запись в файл: <span id="writeFileName"></span></div>
+            <textarea class="modal__textarea" id="writeContent" rows="8" placeholder="Содержимое файла..."></textarea>
+            <div class="modal__actions">
+                <button class="btn btn--primary" onclick="doWrite()">Сохранить</button>
+                <button class="btn" onclick="hideModal('writeModal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cat (просмотр) -->
+    <div class="modal-overlay" id="catModal">
+        <div class="modal">
+            <div class="modal__header">Просмотр: <span id="catFileName"></span></div>
+            <pre class="modal__pre" id="catContent"></pre>
+            <div class="modal__actions">
+                <button class="btn" onclick="hideModal('catModal')">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cp / Mv -->
+    <div class="modal-overlay" id="cpMvModal">
+        <div class="modal">
+            <div class="modal__header" id="cpMvTitle">Копировать</div>
+            <p class="modal__label">Источник: <strong id="cpMvSrc"></strong></p>
+            <input type="text" class="modal__input" id="cpMvDst" placeholder="путь назначения">
+            <div class="modal__actions">
+                <button class="btn btn--primary" id="cpMvBtn" onclick="doCpMv()">OK</button>
+                <button class="btn" onclick="hideModal('cpMvModal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chmod -->
+    <div class="modal-overlay" id="chmodModal">
+        <div class="modal">
+            <div class="modal__header">Изменить права: <span id="chmodPath"></span></div>
+            <input type="text" class="modal__input" id="chmodMode" placeholder="755">
+            <div class="modal__actions">
+                <button class="btn btn--primary" onclick="doChmod()">Применить</button>
+                <button class="btn" onclick="hideModal('chmodModal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chown -->
+    <div class="modal-overlay" id="chownModal">
+        <div class="modal">
+            <div class="modal__header">Сменить владельца: <span id="chownPath"></span></div>
+            <input type="text" class="modal__input" id="chownOwner" placeholder="имя пользователя">
+            <div class="modal__actions">
+                <button class="btn btn--primary" onclick="doChown()">Применить</button>
+                <button class="btn" onclick="hideModal('chownModal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Archive -->
+    <div class="modal-overlay" id="archiveModal">
+        <div class="modal">
+            <div class="modal__header">Создать архив</div>
+            <input type="text" class="modal__input" id="archiveName" placeholder="archive.zip">
+            <input type="text" class="modal__input" id="archiveSources" placeholder="file1.txt file2.txt (через пробел)">
+            <div class="modal__actions">
+                <button class="btn btn--primary" onclick="doArchive()">Создать</button>
+                <button class="btn" onclick="hideModal('archiveModal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extract -->
+    <div class="modal-overlay" id="extractModal">
+        <div class="modal">
+            <div class="modal__header">Распаковать: <span id="extractName"></span></div>
+            <input type="text" class="modal__input" id="extractDest" placeholder="папка назначения (по умолчанию .)">
+            <div class="modal__actions">
+                <button class="btn btn--primary" onclick="doExtract()">Распаковать</button>
+                <button class="btn" onclick="hideModal('extractModal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restore -->
+    <div class="modal-overlay" id="restoreModal">
+        <div class="modal">
+            <div class="modal__header">Восстановить бэкап</div>
+            <input type="text" class="modal__input" id="restoreName" placeholder="backup_20260316_120000.json">
+            <div class="modal__actions">
+                <button class="btn btn--primary" onclick="doRestore()">Восстановить</button>
+                <button class="btn" onclick="hideModal('restoreModal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
