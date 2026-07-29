@@ -1,0 +1,4 @@
+[
+  {"id": 1, "amount": 1500, "date": "2026-07-03", "description": "Зарплата", "category": "salary", "transaction_type": "income"},
+  {"id": 2, "amount": 300, "date": "2026-07-03", "description": "Кофе", "category": "food", "transaction_type": "expense"}
+]

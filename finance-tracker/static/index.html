@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eceef1;
+    --surface: #ffffff;
+    --ink: #171e28;
+    --muted: #7c8698;
+    --line: #e2e6ec;
+    --hero: #17202e;
+    --hero-soft: #263447;
+    --income: #12a170;
+    --income-soft: #e2f4ec;
+    --expense: #e5603a;
+    --expense-soft: #fceae3;
+    --focus: #4f7cf0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 28px; }
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 22px; letter-spacing: -0.02em;
+  }
+  .logo .mark { color: var(--income); }
+  header .sub { color: var(--muted); font-size: 13px; }
+
+  .hero {
+    background: var(--hero);
+    color: #fff;
+    border-radius: 20px;
+    padding: 28px 30px;
+    margin-bottom: 22px;
+  }
+  .hero .label { color: #9aa6b8; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .hero .balance {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: clamp(38px, 9vw, 60px);
+    letter-spacing: -0.02em;
+    margin: 4px 0 22px;
+    font-variant-numeric: tabular-nums;
+  }
+  .split { display: flex; gap: 14px; flex-wrap: wrap; }
+  .split .cell {
+    flex: 1 1 140px;
+    background: var(--hero-soft);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .split .cell .k { font-size: 12px; color: #9aa6b8; display: flex; align-items: center; gap: 7px; }
+  .split .cell .k .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.in { background: var(--income); }
+  .dot.out { background: var(--expense); }
+  .split .cell .v { font-family: 'Space Mono', monospace; font-size: 20px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 22px;
+  }
+  .panel h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; font-weight: 600; margin: 0 0 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .toggle { display: inline-flex; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 14px; }
+  .toggle button {
+    border: 0; background: transparent; cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    padding: 8px 16px; border-radius: 7px; color: var(--muted);
+  }
+  .toggle button.active[data-kind="income"] { background: var(--income); color: #fff; }
+  .toggle button.active[data-kind="expense"] { background: var(--expense); color: #fff; }
+
+  form .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  form .field { flex: 1 1 130px; display: flex; flex-direction: column; gap: 5px; }
+  form label { font-size: 12px; color: var(--muted); }
+  input {
+    font-family: 'Inter', sans-serif; font-size: 14px;
+    padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: #fff; color: var(--ink); width: 100%;
+  }
+  input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; border-color: transparent; }
+  .add-btn {
+    margin-top: 14px; border: 0; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px;
+    background: var(--hero); color: #fff; padding: 12px 22px; border-radius: 11px;
+  }
+  .add-btn:hover { background: #223047; }
+  .err { color: var(--expense); font-size: 13px; margin-top: 10px; min-height: 18px; }
+
+  .ledger { list-style: none; margin: 0; padding: 0; }
+  .ledger li {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 4px; border-bottom: 1px solid var(--line);
+  }
+  .ledger li:last-child { border-bottom: 0; }
+  .badge { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; font-size: 17px; }
+  .badge.in { background: var(--income-soft); color: var(--income); }
+  .badge.out { background: var(--expense-soft); color: var(--expense); }
+  .ledger .main { flex: 1; min-width: 0; }
+  .ledger .desc { font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ledger .meta { font-size: 12px; color: var(--muted); }
+  .ledger .amount { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ledger .amount.in { color: var(--income); }
+  .ledger .amount.out { color: var(--expense); }
+  .del {
+    border: 0; background: transparent; cursor: pointer; color: var(--muted);
+    font-size: 18px; line-height: 1; padding: 6px; border-radius: 8px; flex-shrink: 0;
+  }
+  .del:hover { background: var(--expense-soft); color: var(--expense); }
+  .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 26px 0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ledger li { animation: fade .25s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  }
+  @media (max-width: 520px) {
+    .add-btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><span class="mark">₽</span> Finance Tracker</div>
+    <span class="sub">учёт доходов и расходов</span>
+  </header>
+
+  <section class="hero">
+    <div class="label">Баланс</div>
+    <div class="balance" id="balance">0 ₽</div>
+    <div class="split">
+      <div class="cell">
+        <div class="k"><span class="dot in"></span> Доходы</div>
+        <div class="v" id="income">0 ₽</div>
+      </div>
+      <div class="cell">
+        <div class="k"><span class="dot out"></span> Расходы</div>
+        <div class="v" id="expense">0 ₽</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Новая операция</h2>
+    <div class="toggle" id="toggle">
+      <button type="button" data-kind="income" class="active">Доход</button>
+      <button type="button" data-kind="expense">Расход</button>
+    </div>
+    <form id="form">
+      <div class="row">
+        <div class="field">
+          <label for="amount">Сумма</label>
+          <input id="amount" type="number" min="1" placeholder="1000" required>
+        </div>
+        <div class="field">
+          <label for="category">Категория</label>
+          <input id="category" type="text" placeholder="еда, зарплата…">
+        </div>
+        <div class="field">
+          <label for="description">Описание</label>
+          <input id="description" type="text" placeholder="кофе на вынос">
+        </div>
+      </div>
+      <button class="add-btn" type="submit">Добавить операцию</button>
+      <div class="err" id="err"></div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Операции</h2>
+    <ul class="ledger" id="ledger"></ul>
+  </section>
+</div>
+
+<script>
+  let currentKind = "income";
+  const fmt = (n) => new Intl.NumberFormat("ru-RU").format(n) + " ₽";
+
+  const toggle = document.getElementById("toggle");
+  toggle.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    currentKind = btn.dataset.kind;
+    [...toggle.children].forEach((b) => b.classList.toggle("active", b === btn));
+  });
+
+  async function load() {
+    const [stats, items] = await Promise.all([
+      fetch("/api/stats").then((r) => r.json()),
+      fetch("/api/transactions").then((r) => r.json()),
+    ]);
+    document.getElementById("balance").textContent = fmt(stats.balance);
+    document.getElementById("income").textContent = fmt(stats.total_income);
+    document.getElementById("expense").textContent = fmt(stats.total_expense);
+    renderLedger(items);
+  }
+
+  function renderLedger(items) {
+    const ledger = document.getElementById("ledger");
+    if (!items.length) {
+      ledger.innerHTML = '<div class="empty">Пока нет операций. Добавьте первую выше.</div>';
+      return;
+    }
+    ledger.innerHTML = "";
+    items.slice().reverse().forEach((t) => {
+      const isIncome = t.transaction_type === "income";
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <div class="badge ${isIncome ? "in" : "out"}">${isIncome ? "↑" : "↓"}</div>
+        <div class="main">
+          <div class="desc">${escape(t.description) || (isIncome ? "Доход" : "Расход")}</div>
+          <div class="meta">${escape(t.category) || "без категории"} · ${t.date}</div>
+        </div>
+        <div class="amount ${isIncome ? "in" : "out"}">${isIncome ? "+" : "−"}${fmt(t.amount)}</div>
+        <button class="del" title="Удалить" data-id="${t.id}">×</button>`;
+      ledger.appendChild(li);
+    });
+  }
+
+  function escape(s) {
+    const d = document.createElement("div");
+    d.textContent = s || "";
+    return d.innerHTML;
+  }
+
+  document.getElementById("ledger").addEventListener("click", async (e) => {
+    const btn = e.target.closest(".del");
+    if (!btn) return;
+    await fetch("/api/transactions/" + btn.dataset.id, { method: "DELETE" });
+    load();
+  });
+
+  document.getElementById("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = document.getElementById("err");
+    err.textContent = "";
+    const body = {
+      amount: Number(document.getElementById("amount").value),
+      transaction_type: currentKind,
+      category: document.getElementById("category").value,
+      description: document.getElementById("description").value,
+    };
+    const res = await fetch("/api/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      err.textContent = "Не удалось добавить: проверьте, что сумма положительная.";
+      return;
+    }
+    e.target.reset();
+    load();
+  });
+
+  load();
+</script>
+</body>
+</html>
